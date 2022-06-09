@@ -15,97 +15,121 @@ namespace Practica_1year_ants
             //create colonies
             List<Colony> colonies = new List<Colony>
             {
-                new("красные", new Queen("София", new[] {3, 4}, new[] {3, 4}, 1, 0, 25, 8, 20), new []{14, 9, 1}),
+                new("красные", new Queen("София", new[] {3, 4}, new[] {3, 4}, 1, 0, 25, 8, 20), new[] {14, 9, 1}),
                 new("зеленые",
-                    new Queen("Елизавета", new[] {2, 4}, new[] {1, 3}, 2, 0, 18, 5, 22), new []{17, 7, 1})
+                    new Queen("Елизавета", new[] {2, 4}, new[] {1, 3}, 2, 0, 18, 5, 22), new[] {17, 7, 1})
             };
             // cделать кучи
             Heap[] heaps =
             {
-                new(100, 100, 100, 100), new(100, 100, 100, 100), new(100, 100, 100, 100),
-                new(100, 100, 100, 100), new(100, 100, 100, 100)
+                new(35, 30, 0, 0), new(0, 39, 27, 17), new(14, 13, 15, 30),
+                new(15, 37, 14, 28), new(15, 35, 0, 32)
             };
+            // забить колонии муравьями
             for (int j = 0; j < colonies.Count; j++)
             {
-                for (int g = 0; g < 7; g++)
+                for (int g = 0; g < 6; g++)
                 {
-                    if (colonies[j].Queen.Colony == 1)
+                    if (j == 0)
                     {
-                        colonies[j].Workers.Add(new Worker("легендарный", 1, 1, 1, 2, 3, 3));
+                        colonies[j].Workers.Add(new Worker("обычный", 1, 1, 0, 0, 0, 1, armor: 8));
                     }
 
-                    if (colonies[j].Queen.Colony == 2)
+                    if (j == 1)
                     {
-                        colonies[j].Workers.Add(new Worker("старший", 2, 2, 1, 2, 1, 1));
-                    }
-
-                    if (colonies[j].Queen.Colony == 3)
-                    {
-                        colonies[j].Workers.Add(new Worker("легендарный", 3, 1, 2, 2, 2, 3));
+                        colonies[j].Workers.Add(new Worker("обычный", 2, 0, 0, 0, 1, 1));
                     }
                 }
 
-                for (int g = 0; g < 7; g++)
+                for (int g = 0; g < 5; g++)
                 {
-                    if (colonies[j].Queen.Colony == 1)
+                    if (j == 0)
                     {
-                        colonies[j].Worker2.Add(new Worker("легендарный крепкий", 1, 2, 2, 2, 1,
-                            3, 1, 1));
+                        colonies[j].Workers.Add(new Worker("элитный", 1, 1, 0, 0, 1, 2, 8, 4));
                     }
 
-                    if (colonies[j].Queen.Colony == 2)
+                    if (j == 1)
                     {
-                        colonies[j].Worker2
-                            .Add(new Worker("легендарный бригадир", 2, 2, 2, 2, 1, 3));
-                    }
-
-                    if (colonies[j].Queen.Colony == 3)
-                    {
-                        colonies[j].Worker2
-                            .Add(new Worker("старший бригадир", 3, 1, 2, 2, 1, 1));
+                        colonies[j].Workers.Add(new Worker("элитный", 2, 0, 0, 1, 1, 2, 8, 4));
                     }
                 }
 
-                for (int g = 0; g < 7; g++)
+                for (int g = 0; g < 5; g++)
                 {
-                    if (colonies[j].Queen.Colony == 1)
+                    if (j == 0)
                     {
-                        colonies[j].Warriors.Add(new Warrior(0, "обычный", 1));
+                        colonies[j].Workers.Add(new Worker("элитный капризный", 1, 0, 0, 1, 1, 2, 8, 4,
+                            bonus: new List<string> {"игнорирует каждый 2й поход"}));
                     }
 
-                    if (colonies[j].Queen.Colony == 2)
+                    if (j == 1)
                     {
-                        colonies[j].Warriors.Add(new Warrior(0, "старший", 2));
-                    }
-
-                    if (colonies[j].Queen.Colony == 3)
-                    {
-                        colonies[j].Warriors.Add(new Warrior(0, "продвинутый", 3, 2));
+                        colonies[j].Workers.Add(new Worker("обычный забывчивый", 2, 0, 1, 0, 0, 1,
+                            bonus: new List<string> {"может забыть взять ресурс из кучи"}));
                     }
                 }
 
-                for (int g = 0; g < 7; g++)
+                for (int g = 0; g < 6; g++)
                 {
-                    if (colonies[j].Queen.Colony == 1)
+                    if (j == 0)
                     {
-                        colonies[j].Warior2
-                            .Add(new Warrior(0, "продвинутый худой", 1, 2, 1, 1, 0));
+                        colonies[j].Warriors.Add(new Warrior(0, "обычный настойчивый", 1, 1, 1, 1, 0, 1,
+                            new List<string> {"всегда наносит укус"}));
                     }
 
-                    if (colonies[j].Queen.Colony == 2)
+                    if (j == 1)
                     {
-                        colonies[j].Warior2.Add(new Warrior(1, "обычный аномальный", 2));
+                        colonies[j].Warriors.Add(new Warrior(0, "обычный точный", 2, 1, 1, 1, 0, 1,
+                            new List<string> {"игнорирует защиту", "может наносить урон неуязвимым насекомым"}));
+                    }
+                }
+
+                for (int g = 0; g < 5; g++)
+                {
+                    if (j == 0)
+                    {
+                        colonies[j].Warriors.Add(new Warrior(0, "старший", 1, 1, 1, 2, 1, 2));
                     }
 
-                    if (colonies[j].Queen.Colony == 3)
+                    if (j == 1)
                     {
-                        colonies[j].Warior2.Add(new Warrior(0, "старший сосредоточенный", 3, 1, 1,
-                            1, 1, 2));
+                        colonies[j].Warriors.Add(new Warrior(0, "элитный", 2, 2, 2, 8, 4, 3));
                     }
+                }
+
+                for (int g = 0; g < 5; g++)
+                {
+                    if (j == 0)
+                    {
+                        colonies[j].Warriors.Add(new Warrior(0, "элитный", 1, 2, 2, 8, 4, 3));
+                    }
+
+                    if (j == 1)
+                    {
+                        colonies[j].Warriors.Add(new Warrior(0, "легендарный", 2, 3, 1, 10, 6, 6));
+                    }
+                }
+
+                // создать особых
+                if (j == 0)
+                {
+                    colonies[j].Specials.Add(new Special(1, 1, 1, 1, 1, 0,
+                        "трудолюбивый неуязвимый агрессивный берсерк забывчивый - Сверчок", 1, 3, 3, 20, 5, 7,
+                        new List<string>
+                        {
+                            "не может быть атакован войнами", "одноразовый, массового поражения",
+                            "может забыть взять ресурс из кучи"
+                        }));
+                }
+
+                if (j == 1)
+                {
+                    colonies[j].Specials.Add(new Special(0, 0, 0, 0, 0, 0,
+                        "ленивый обычный мирный осторожный - Бабочка", 2, 0, 0, 17, 7, 0,
+                        new List<string>
+                            {"группа игнорирует эффекты агрессивных насекомых на территории"}));
                 }
             }
-
-            // create specials
 
             Random random = new Random();
             int aphidStartDay = random.Next(0, 7);
@@ -608,13 +632,15 @@ namespace Practica_1year_ants
 
                 else if (comand == "stop")
                 {
-                    break;
+                    return;
                 }
 
                 else
                 {
-                    Console.WriteLine("Команда не распознана. Попробуйте ещё раз");
+                    Console.WriteLine("{0}: command not found", comand);
                 }
+
+                i++;
             }
         }
 
@@ -794,8 +820,8 @@ namespace Practica_1year_ants
             public int Count;
 
             public Worker(String tags, int colony, int leaf, int branch, int stone, int water, int count,
-                int hp = 1, int armor = 0, int damage = 0) : base(colony, tags,
-                damage: damage, armor: armor, hp: hp)
+                int hp = 1, int armor = 0, int damage = 0, List<string>? bonus = null) : base(colony, tags,
+                damage: damage, armor: armor, hp: hp, bonus)
             {
                 Leaf = leaf;
                 Branch = branch;
@@ -821,87 +847,101 @@ namespace Practica_1year_ants
                 TargetNum = target;
             }
 
-            public void Fight(Worker worker, Warrior warrior, Special special)
+            public void Fight(Worker? worker, Warrior? warrior, Special? special, bool groupIgnoreEffects = false)
             {
                 if (this.aphid)
                 {
                     return;
                 }
 
-                if (worker != null)
+                if (worker is not null)
                 {
                     if (worker.Colony != Colony || Bad == 1)
                     {
-                        if (worker.Armor >= Damage)
+                        if (Bonus is not null && Bonus.Contains("игнорирует защиту"))
                         {
-                            worker.Armor -= Damage;
+                            worker.HP -= Damage;
                         }
                         else
                         {
-                            worker.HP -= Damage - worker.Armor;
-                            worker.Armor = 0;
-                        }
-
-                        if (Armor >= worker.Damage)
-                        {
-                            Armor -= worker.Damage;
-                        }
-                        else
-                        {
-                            HP -= worker.Damage - Armor;
-                            Armor = 0;
+                            if (worker.Armor >= Damage)
+                            {
+                                worker.Armor -= Damage;
+                            }
+                            else
+                            {
+                                worker.HP -= Damage - worker.Armor;
+                                worker.Armor = 0;
+                            }
                         }
                     }
                 }
 
-                if (warrior != null)
+                if (warrior is not null)
                 {
                     if (warrior.Colony != Colony || Bad == 1)
                     {
-                        if (warrior.Armor >= Damage)
+                        if (Bonus is not null && Bonus.Contains("игнорирует защиту"))
                         {
-                            warrior.Armor -= Damage;
+                            warrior.HP -= Damage;
                         }
                         else
                         {
-                            warrior.HP -= Damage - warrior.Armor;
-                            warrior.Armor = 0;
+                            if (warrior.Armor >= Damage)
+                            {
+                                warrior.Armor -= Damage;
+                            }
+                            else
+                            {
+                                warrior.HP -= Damage - warrior.Armor;
+                                warrior.Armor = 0;
+                            }
                         }
+                    }
 
-                        if (Armor >= warrior.Damage)
+                    if ((warrior.HP > 0 || (warrior.Bonus is not null && warrior.Bonus.Contains("всегда наносит укус"))) &&
+                        (warrior.Colony != Colony || warrior.Bad == 1))
+                    {
+                        if (warrior.Bonus is not null && warrior.Bonus.Contains("игнорирует защиту"))
                         {
-                            Armor -= warrior.Damage;
+                            HP -= warrior.Damage;
                         }
                         else
                         {
-                            HP -= warrior.Damage - Armor;
-                            Armor = 0;
+                            if (Armor >= warrior.Damage)
+                            {
+                                Armor -= warrior.Damage;
+                            }
+                            else
+                            {
+                                HP -= warrior.Damage - Armor;
+                                Armor = 0;
+                            }
                         }
                     }
                 }
 
-                if (special != null)
+                if (special is null) return;
+                if (special.Colony != Colony || Bad == 1)
                 {
-                    if (!special.Bonus.Contains("не может быть атакован войнами"))
+                    if (!special.Bonus!.Contains("не может быть атакован войнами") ||
+                        special.Bonus!.Contains("игнорирует защиту"))
                     {
-                        if (special.Armor >= Damage)
+                        if (Bonus is not null && Bonus.Contains("игнорирует защиту"))
                         {
-                            special.Armor -= Damage;
+                            special.HP -= Damage;
                         }
                         else
                         {
-                            special.HP -= Damage - special.Armor;
-                            special.Armor = 0;
-                        }
-
-                        if (Armor >= special.Damage)
-                        {
-                            Armor -= special.Damage;
-                        }
-                        else
-                        {
-                            HP -= special.Damage - Armor;
-                            Armor = 0;
+                            if (special.Armor >= Damage)
+                            {
+                                special.Armor -= Damage;
+                            }
+                            else
+                            {
+                                special.HP -= Damage - special.Armor;
+                                special.Armor = 0;
+                            }
                         }
                     }
                     else if (special.Tags.Contains("мирный"))
@@ -919,6 +959,17 @@ namespace Practica_1year_ants
                             }
                         }
                     }
+                }
+
+                if (special.Colony == Colony) return;
+                if (Armor >= special.Damage)
+                {
+                    Armor -= special.Damage;
+                }
+                else
+                {
+                    HP -= special.Damage - Armor;
+                    Armor = 0;
                 }
             }
         }
@@ -945,7 +996,7 @@ namespace Practica_1year_ants
             }
         }
 
-        struct Colony
+        class Colony
         {
             public string Name;
             public int leaf;
@@ -1027,7 +1078,7 @@ namespace Practica_1year_ants
                             Console.WriteLine($"---{warrior1.Tags}");
                             Console.WriteLine(
                                 $"--- состояние HP={warrior1.HP},Armor={warrior1.Armor},Damage={warrior1.Damage}");
-                            if (warrior1.Bonus != null)
+                            if (warrior1.Bonus is not null)
                             {
                                 foreach (var bonus in warrior1.Bonus)
                                 {
@@ -1048,7 +1099,7 @@ namespace Practica_1year_ants
                             Console.WriteLine($"---{special.Tags}");
                             Console.WriteLine(
                                 $"--- состояние HP={special.HP},Armor={special.Armor},Damage={special.Damage}");
-                            if (special.Bonus != null)
+                            if (special.Bonus is not null)
                             {
                                 foreach (var bonus in special.Bonus)
                                 {
