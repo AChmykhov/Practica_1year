@@ -7,20 +7,17 @@ namespace Practica_1year_ants
         static void Main(string[] args)
         {
             Console.WriteLine($"Commands:\nnext - starts next day\nstop - stops program\ninfo - info about objects");
-            string comand;
-            string col;
-            string inf;
+            string? comand;
+            string col; //TODO: cleanup
+            string inf; //TODO: cleanup
             int i = 0;
-            int tlyaStartDay;
             int dry = 11;
             //create colonies
             List<Colony> colonies = new List<Colony>
             {
-                new("чёрные", new Queen("Амалия", new[] {2, 4}, new[] {3, 4}, 1, 0, 3, 1, 1)),
-                new("красные",
-                    new Queen("Гвиндолина", new[] {2, 3}, new[] {3, 4}, 2, 0, 2, 0, 2)),
-                new("рыжие",
-                    new Queen("Евангелина", new[] {1, 3}, new[] {1, 5}, 3, 0, 5, 2, 0))
+                new("красные", new Queen("София", new[] {3, 4}, new[] {3, 4}, 1, 0, 25, 8, 20), new []{14, 9, 1}),
+                new("зеленые",
+                    new Queen("Елизавета", new[] {2, 4}, new[] {1, 3}, 2, 0, 18, 5, 22), new []{17, 7, 1})
             };
             // cделать кучи
             Heap[] heaps =
@@ -111,7 +108,7 @@ namespace Practica_1year_ants
             // create specials
 
             Random random = new Random();
-            tlyaStartDay = random.Next(0, 7);
+            int aphidStartDay = random.Next(0, 7);
 
             Console.WriteLine("=====");
 
@@ -121,9 +118,9 @@ namespace Practica_1year_ants
                 if (comand == "next")
                 {
                     Console.WriteLine($"Day {i}  (Until dry season {dry - i} days)");
-                    if (tlyaStartDay < i && i < tlyaStartDay + 5)
+                    if (aphidStartDay < i && i < aphidStartDay + 5)
                     {
-                        Console.WriteLine($"Действует эффект \"Тля\" , осталось {tlyaStartDay + 5 - i} дней ");
+                        Console.WriteLine($"Действует эффект \"Тля\" , осталось {aphidStartDay + 5 - i} дней ");
                     }
 
                     foreach (Colony j in colonies)
@@ -603,127 +600,10 @@ namespace Practica_1year_ants
 
                 else if (comand == "info")
                 {
-                    Console.WriteLine("Введите название колонии");
-                    col = Console.ReadLine();
-                    Console.WriteLine();
                     Console.WriteLine(
-                        "Введите <колония> если хотите увидеть информацию о колонии, <рабочий> - о рабочем, <воин> - о воине, <особое> - об особом насекомом");
-                    inf = Console.ReadLine();
-                    Console.WriteLine();
-                    if (inf == "колония")
-                    {
-                        foreach (Colony j in colonies)
-                        {
-                            if (j.Name == col)
-                            {
-                                Colony a = j;
-                                Console.WriteLine($" Королева \"{j.Queen.Name}\"");
-                                Console.WriteLine(
-                                    $" Общая популяция - {a.Warriors.Count + a.Workers.Count + a.Scarab.Life + a.Termite.Life + a.Butterfly.Life + a.Worker2.Count + a.Warior2.Count - 4}");
-                                Console.WriteLine();
-                                Console.WriteLine($" <<<<<<<<<<<<< Рабочие >>>>>>>>>>>>>");
-                                Console.WriteLine();
-                                Console.WriteLine($" Тип : {j.Workers[0].Tags}");
-                                Console.WriteLine(
-                                    $" ---- Параметры : Здоровье = {j.Workers[0].HP}; Защита = {j.Workers[0].Armor}");
-                                Console.WriteLine($" ---- Количество : {j.Workers.Count}");
-                                Console.WriteLine();
-                                Console.WriteLine($" Тип : {j.Worker2[0].Tags}");
-                                Console.WriteLine(
-                                    $" ---- Параметры : Здоровье = {j.Worker2[0].HP}; Защита = {j.Worker2[0].Armor}");
-                                Console.WriteLine($" ---- Количество : {j.Worker2.Count}");
-                                Console.WriteLine();
-                                Console.WriteLine($" <<<<<<<<<<<<< Воины >>>>>>>>>>>>>");
-                                Console.WriteLine();
-                                Console.WriteLine($" Тип : {j.Warriors[0].Tags}");
-                                Console.WriteLine(
-                                    $" ---- Параметры : Здоровье = {j.Warriors[0].HP}; Защита = {j.Warriors[0].Armor}");
-                                Console.WriteLine($" ---- Количество : {j.Warriors.Count}");
-                                Console.WriteLine();
-                                Console.WriteLine($" Тип : {j.Warior2[0].Tags}");
-                                Console.WriteLine(
-                                    $" ---- Параметры : Здоровье = {j.Warior2[0].HP}; Защита = {j.Warior2[0].Armor}");
-                                Console.WriteLine($" ---- Количество : {j.Warior2.Count}");
-                                Console.WriteLine();
-                                Console.WriteLine($" <<<<<<<<<<<<< Особое насекомое >>>>>>>>>>>>>");
-                                Console.WriteLine();
-
-                                if (j.Butterfly.Life == 1)
-                                {
-                                    Console.WriteLine($" Название : {j.Butterfly.Name}");
-                                    Console.WriteLine(
-                                        $" ---- Параметры : Здоровье = {j.Butterfly.HP}; Защита = {j.Butterfly.Armor}; Атака = {j.Butterfly.Damage}");
-                                    Console.WriteLine($" ---- Бонусы : {j.Butterfly.Bonus}");
-                                }
-
-                                Console.WriteLine();
-                            }
-                        }
-                    }
-
-                    if (inf == "рабочий")
-                    {
-                        foreach (Colony j in colonies)
-                        {
-                            if (j.Name == col)
-                            {
-                                Console.WriteLine($"Тип : {j.Workers[0].Tags}");
-                                Console.WriteLine(
-                                    $"Параметры : Здоровье = {j.Workers[0].HP}; Защита = {j.Workers[0].Armor}");
-                                Console.WriteLine($"Королева : {j.Queen.Name}");
-                                Console.WriteLine();
-                                Console.WriteLine($"Тип : {j.Worker2[0].Tags}");
-                                Console.WriteLine(
-                                    $"Параметры : Здоровье = {j.Worker2[0].HP}; Защита = {j.Worker2[0].Armor}");
-                                Console.WriteLine($"Королева : {j.Queen.Name}");
-                                Console.WriteLine();
-                            }
-                        }
-                    }
-
-                    if (inf == "воин")
-                    {
-                        foreach (Colony j in colonies)
-                        {
-                            if (j.Name == col)
-                            {
-                                Console.WriteLine($" Тип : {j.Warriors[0].Tags}");
-                                Console.WriteLine(
-                                    $" Параметры : Здоровье = {j.Warriors[0].HP}; Защита = {j.Warriors[0].Armor}; Атака = {j.Warriors[0].Damage}");
-                                Console.WriteLine($"Королева : {j.Queen.Name}");
-                                Console.WriteLine();
-                                Console.WriteLine($" Тип : {j.Warior2[0].Tags}");
-                                Console.WriteLine(
-                                    $" Параметры : Здоровье = {j.Warior2[0].HP}; Защита = {j.Warior2[0].Armor}; Атака = {j.Warior2[0].Damage}");
-                                Console.WriteLine($"Королева : {j.Queen.Name}");
-                                Console.WriteLine();
-                            }
-                        }
-                    }
-
-                    if (inf == "особое")
-                    {
-                        foreach (Colony j in colonies)
-                        {
-                            if (j.Name == col)
-                            {
-                                if (j.Butterfly.Life == 1)
-                                {
-                                    Console.WriteLine($" Название : {j.Butterfly.Name}");
-                                    Console.WriteLine(
-                                        $" Параметры : Здоровье = {j.Butterfly.HP}; Защита = {j.Butterfly.Armor}; Атака = {j.Butterfly.Damage}");
-                                    Console.WriteLine($" Бонусы : {j.Butterfly.Bonus}");
-                                }
-
-                                if ((j.Butterfly.Life == 0) & (j.Scarab.Life == 0) & (j.Termite.Life == 0))
-                                {
-                                    Console.WriteLine("В этой колонии нет особых насекомых");
-                                }
-
-                                Console.WriteLine();
-                            }
-                        }
-                    }
+                        $"Введите номер колонии (1 - {colonies.Count})  и тип требуемых данных (colony, worker, warrior, special)");
+                    string[] param = Console.ReadLine().Split();
+                    colonies[Convert.ToInt32(param[0]) - 1].GetInfoColony(param[1]);
                 }
 
                 else if (comand == "stop")
@@ -738,6 +618,92 @@ namespace Practica_1year_ants
             }
         }
 
+        static void Reproduction(List<Colony> colonies, int count)
+        {
+            Random random = new Random();
+            for (int colony = 0; colony < count; colony++)
+            {
+                if (!colonies[colony].SubColony)
+                {
+                    if (colonies[colony].Queen.Count == 0 && colonies[colony].Queen.QueenDoughter[0] <=
+                        colonies[colony].Queen.QueenDoughter[1])
+                    {
+                        colonies[colony].Queen.Start = random.Next(colonies[colony].Queen.QueenDoughter[0],
+                            colonies[colony].Queen.QueenDoughter[1]);
+                        colonies[colony].Queen.Count++;
+                    }
+                    else if (colonies[colony].Queen.Count < colonies[colony].Queen.Start)
+                    {
+                        colonies[colony].Queen.Count++;
+                    }
+                    else if (colonies[colony].Queen.Count >= colonies[colony].Queen.Start + random.Next(0, 8))
+                    {
+                        colonies.Add(new Colony(CreateColonyName(random),
+                            new Queen(CreateQueenName(random), new int[] {2, random.Next(2, 5)},
+                                new int[] {1, random.Next(2, 5)}, colonies[colony].Queen.Colony,
+                                // count, 
+                                1, 3, 1, 1),
+                            new int[] {random.Next(3, 10), random.Next(2, 5), random.Next(1, 2)}, true));
+                        count += 1;
+                        AddAnts(colonies[^1], colonies[colony], random, count);
+                        colonies[colony].Queen.Count = 0;
+                        colonies[colony].Queen.QueenDoughter[0]++;
+                    }
+                }
+            }
+        }
+
+        static void AddAnts(Colony colony, Colony parentalColony, Random random, int colonyNum)
+        {
+            for (int worker = 0; worker < colony.Population![0]; worker++)
+            {
+                colony.Workers.Add(
+                    (Worker) parentalColony.Workers[random.Next(0, parentalColony.Workers.Count)].Clone());
+                colony.Workers[worker].Colony = colonyNum;
+            }
+
+            for (int warrior = 0; warrior < colony.Population[1]; warrior++)
+            {
+                colony.Warriors.Add((Warrior) parentalColony.Warriors[random.Next(0, parentalColony.Warriors.Count)]
+                    .Clone());
+                colony.Warriors[warrior].Colony = colonyNum;
+            }
+
+            for (int special = 0; special < colony.Population[2]; special++)
+            {
+                colony.Specials.Add((Special) parentalColony.Specials[random.Next(0, parentalColony.Specials.Count)]
+                    .Clone());
+                colony.Specials[special].Colony = colonyNum;
+            }
+        }
+
+        static String CreateColonyName(Random random)
+        {
+            return create_name(random);
+        }
+
+        static String CreateQueenName(Random random)
+        {
+            return create_name(random);
+        }
+
+        static string create_name(Random random)
+        {
+            string[] names =
+            {
+                "а", "б", "в", "г", "д", "е", "ё", "ж", "з", "и", "й", "к", "л", "м", "н", "о", "п", "р", "с", "т", "у",
+                "ф", "х", "ц", "ч", "ш", "щ", "ъ", "ы", "ь", "э", "ю", "я"
+            };
+            string n = names[random.Next(0, 32)];
+            for (int s = 0; s < random.Next(1, 15); s++)
+            {
+                n = n + names[random.Next(0, 32)];
+            }
+
+            return n;
+        }
+
+
         class Ant : ICloneable
         {
             public String Tags;
@@ -746,6 +712,8 @@ namespace Practica_1year_ants
             public int Damage;
             public int Colony;
             public List<string>? Bonus;
+            public bool aphid = false;
+
 
             public Ant(int colony, string tags = "", int damage = 0, int armor = 0,
                 int hp = 1, List<string>? bonus = null)
@@ -807,7 +775,7 @@ namespace Practica_1year_ants
                         }
                         else if (type == 2)
                         {
-                            colony.Specials.Add((Special)colony.Specials[random.Next(0, colony.Specials.Count - 1)]
+                            colony.Specials.Add((Special) colony.Specials[random.Next(0, colony.Specials.Count - 1)]
                                 .Clone());
                         }
 
@@ -826,8 +794,8 @@ namespace Practica_1year_ants
             public int Count;
 
             public Worker(String tags, int colony, int leaf, int branch, int stone, int water, int count,
-                int hp = 1, int armor = 0, int damage = 0) : base(colony, tags, damage: damage,
-                armor: armor, hp: hp)
+                int hp = 1, int armor = 0, int damage = 0) : base(colony, tags,
+                damage: damage, armor: armor, hp: hp)
             {
                 Leaf = leaf;
                 Branch = branch;
@@ -839,12 +807,14 @@ namespace Practica_1year_ants
 
         class Warrior : Ant
         {
-            public int AttackNum;
+            public int AttackNum; // укусы
             public int Bad;
             public int TargetNum;
 
+
             public Warrior(int bad, String tags, int colony, int target = 1, int attackNum = 1, int hp = 1,
-                int armor = 1, int damage = 1) : base(colony, tags, damage: damage, armor: armor, hp: hp)
+                int armor = 1, int damage = 1, List<String>? bonus = null) : base(colony, tags, damage: damage,
+                armor: armor, hp: hp, bonus: bonus)
             {
                 AttackNum = attackNum;
                 Bad = bad;
@@ -853,6 +823,11 @@ namespace Practica_1year_ants
 
             public void Fight(Worker worker, Warrior warrior, Special special)
             {
+                if (this.aphid)
+                {
+                    return;
+                }
+
                 if (worker != null)
                 {
                     if (worker.Colony != Colony || Bad == 1)
@@ -958,7 +933,8 @@ namespace Practica_1year_ants
             public int Count;
 
             public Special(int leaf, int branch, int stone, int water, int count, int bad, string tags, int colony,
-                int target = 1, int attackNum = 1, int hp = 1, int armor = 1, int damage = 1) : base(bad, tags, colony,
+                int target = 1, int attackNum = 1, int hp = 1, int armor = 1, int damage = 1,
+                List<String>? bonus = null) : base(bad, tags, colony,
                 target, attackNum, hp, armor, damage)
             {
                 Leaf = leaf;
@@ -983,20 +959,6 @@ namespace Practica_1year_ants
             public bool SubColony;
             public int[]? Population;
 
-            public Colony(string name, Queen queen, int[]? population) : this()
-            {
-                Name = name;
-                Queen = queen;
-                Workers = new List<Worker>();
-                Warriors = new List<Warrior>();
-                Specials = new List<Special>();
-                Population = population;
-                branch = 0;
-                leaf = 0;
-                stone = 0;
-                water = 0;
-            }
-
             public void Leaf(int a)
             {
                 leaf += a;
@@ -1017,7 +979,7 @@ namespace Practica_1year_ants
                 water += a;
             }
 
-            public Colony(string name, Queen queen, int[] population, bool subColony)
+            public Colony(string name, Queen queen, int[] population, bool subColony = false)
             {
                 Name = name;
                 Queen = queen;
@@ -1044,9 +1006,9 @@ namespace Practica_1year_ants
                         GetInfoColony("warrior");
                         GetInfoColony("special");
                         break;
-                    case "workers":
+                    case "worker":
                     {
-                        Console.WriteLine("======workers");
+                        Console.WriteLine("======Рабочие");
                         foreach (var worker1 in Workers)
                         {
                             Console.WriteLine($"---{worker1.Tags}");
@@ -1059,17 +1021,17 @@ namespace Practica_1year_ants
                     }
                     case "warrior":
                     {
-                        Console.WriteLine("======warriors");
+                        Console.WriteLine("======Воины");
                         foreach (var warrior1 in Warriors)
                         {
                             Console.WriteLine($"---{warrior1.Tags}");
                             Console.WriteLine(
                                 $"--- состояние HP={warrior1.HP},Armor={warrior1.Armor},Damage={warrior1.Damage}");
-                            if (warrior1.Bonus[0] != "none")
+                            if (warrior1.Bonus != null)
                             {
                                 foreach (var bonus in warrior1.Bonus)
                                 {
-                                    Console.WriteLine($"---- бонус {bonus}");
+                                    Console.WriteLine($"---- дополнительный параметр {bonus}");
                                 }
                             }
 
@@ -1080,17 +1042,17 @@ namespace Practica_1year_ants
                     }
                     case "special":
                     {
-                        Console.WriteLine("======special");
+                        Console.WriteLine("======Особые");
                         foreach (var special in Specials)
                         {
                             Console.WriteLine($"---{special.Tags}");
                             Console.WriteLine(
                                 $"--- состояние HP={special.HP},Armor={special.Armor},Damage={special.Damage}");
-                            if (special.Bonus[0] != "none")
+                            if (special.Bonus != null)
                             {
                                 foreach (var bonus in special.Bonus)
                                 {
-                                    Console.WriteLine($"---- бонус {bonus}");
+                                    Console.WriteLine($"---- дополнительный параметр {bonus}");
                                 }
                             }
 
@@ -1101,85 +1063,6 @@ namespace Practica_1year_ants
                     }
                 }
             }
-        }
-
-        static void Reproduction(List<Colony> colonies, int count)
-        {
-            Random random = new Random();
-            for (int colony = 0; colony < count; colony++)
-            {
-                if (!colonies[colony].SubColony)
-                {
-                    if (colonies[colony].Queen.Count == 0 && colonies[colony].Queen.QueenDoughter[0] <=
-                        colonies[colony].Queen.QueenDoughter[1])
-                    {
-                        colonies[colony].Queen.Start = random.Next(colonies[colony].Queen.QueenDoughter[0],
-                            colonies[colony].Queen.QueenDoughter[1]);
-                        colonies[colony].Queen.Count++;
-                    }
-                    else if (colonies[colony].Queen.Count < colonies[colony].Queen.Start)
-                    {
-                        colonies[colony].Queen.Count++;
-                    }
-                    else if (colonies[colony].Queen.Count >= colonies[colony].Queen.Start + random.Next(0, 8))
-                    {
-                        colonies.Add(new Colony(CreateColonyName(random),
-                            new Queen(CreateQueenName(random), new int[] { 2, random.Next(2, 5) },
-                                new int[] { 1, random.Next(2, 5) }, colonies[colony].Queen.Colony,
-                                // count, 
-                                1, 3, 1, 1),
-                            new int[] { random.Next(3, 10), random.Next(2, 5), random.Next(1, 2) }, true));
-                        count += 1;
-                        AddAnts(colonies[^1], colonies[colony], random, count);
-                        colonies[colony].Queen.Count = 0;
-                        colonies[colony].Queen.QueenDoughter[0]++;
-                    }
-                }
-            }
-        }
-        static void AddAnts(Colony colony, Colony parentalColony, Random random, int colonyNum)
-        {
-            for (int worker = 0; worker < colony.Population[0]; worker++)
-            {
-                colony.Workers.Add((Worker)parentalColony.Workers[random.Next(0, parentalColony.Workers.Count)].Clone());
-                colony.Workers[worker].Colony = colonyNum;
-            }
-
-            for (int warrior = 0; warrior < colony.Population[1]; warrior++)
-            {
-                colony.Warriors.Add((Warrior)parentalColony.Warriors[random.Next(0, parentalColony.Warriors.Count)].Clone());
-                colony.Warriors[warrior].Colony = colonyNum;
-            }
-
-            for (int special = 0; special < colony.Population[2]; special++)
-            {
-                colony.Specials.Add((Special)parentalColony.Specials[random.Next(0, parentalColony.Specials.Count)].Clone());
-                colony.Specials[special].Colony = colonyNum;
-            }
-        }
-
-        static String CreateColonyName(Random random)
-        {
-            return create_name(random);
-        }
-        static String CreateQueenName(Random random)
-        {
-            return create_name(random);
-        }
-        static string create_name(Random random)
-        {
-            string[] names =
-            {
-                "а", "б", "в", "г", "д", "е", "ё", "ж", "з", "и", "й", "к", "л", "м", "н", "о", "п", "р", "с", "т", "у",
-                "ф", "х", "ц", "ч", "ш", "щ", "ъ", "ы", "ь", "э", "ю", "я"
-            };
-            string n = names[random.Next(0, 32)];
-            for (int s = 0; s < random.Next(1, 15); s++)
-            {
-                n = n + names[random.Next(0, 32)];
-            }
-
-            return n;
         }
 
         struct Heap
