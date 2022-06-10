@@ -138,6 +138,20 @@ namespace Practica_1year_ants
 
             while (i < dry)
             {
+                int summary = 0;
+                foreach (var heap in heaps)
+                {
+                    summary += heap.Branch;
+                    summary += heap.Leaf;
+                    summary += heap.Stone;
+                    summary += heap.Water;
+                }
+
+                if (summary == 0)
+                {
+                    Winner(colonies);
+                }
+
                 comand = Console.ReadLine();
                 if (comand == "next")
                 {
@@ -147,14 +161,17 @@ namespace Practica_1year_ants
                         Console.WriteLine($"Действует эффект \"Тля\" , осталось {aphidStartDay + 5 - i} дней ");
                     }
 
-                    foreach (Colony j in colonies)
+                    // Console.WriteLine($"День {i}  (До засухи {dryCount - day} дней)");
+                    // Console.WriteLine();
+                    foreach (Colony colony in colonies)
                     {
-                        // a = j; TODO: cleanup
-                        Console.WriteLine($"=====\nКолония \"{j.Name}\":\n==== Королева \"{j.Queen.Name}\"");
+                        Console.WriteLine($"Колония \"{colony.Name}\" :");
+                        Console.WriteLine($"==== Королева \"{colony.Queen.Name}\"");
                         Console.WriteLine(
-                            $"== Популяция:\n+Воины = {j.Warriors.Count + j.Warior2.Count - 2};\n+Рабочие = {j.Workers.Count + j.Worker2.Count - 2};\n" +
-                            $"+Особые = {j.Scarab.Life + j.Termite.Life + j.Butterfly.Life}\n" +
-                            $"= Ресурсы: в = {j.branch}, к = {j.stone}, л = {j.leaf}, р = {j.water}\n====");
+                            $"== Популяция: Воины = {colony.Warriors.Count}; Рабочие = {colony.Workers.Count}; Особые = {colony.Specials.Count};");
+                        Console.WriteLine(
+                            $"== Ресурсы : в = {colony.branch}, к = {colony.stone}, л = {colony.leaf}, р = {colony.water}");
+                        Console.WriteLine();
                     }
 
                     for (int j = 0; j < 5; j++)
@@ -164,462 +181,305 @@ namespace Practica_1year_ants
                     }
 
                     // распределение по кучам
-                    for (int j = 0; j < colonies.Count; j++)
+                    for (int j = 0; j < heaps.Length; j++)
                     {
-                        for (int c = 0; c < colonies[j].Workers.Count; c++)
+                        heaps[j].Specials = new List<Special?>();
+                        heaps[j].Warriors = new List<Warrior?>();
+                        heaps[j].Workers = new List<Worker?>();
+                    }
+                    foreach (var t in colonies)
+                    {
+                        foreach (var n in t.Workers)
                         {
-                            Worker n = colonies[j].Workers[c];
-                            heaps[random.Next(0, 5)].Workers.Add(n);
+                            heaps[random.Next(0, heaps.Length)].Workers.Add(n);
                         }
 
-                        for (int c = 0; c < colonies[j].Worker2.Count; c++)
+                        foreach (var n in t.Warriors)
                         {
-                            Worker n = colonies[j].Worker2[c];
-                            heaps[random.Next(0, 5)].Workers.Add(n);
+                            heaps[random.Next(0, heaps.Length)].Warriors.Add(n);
                         }
 
-                        for (int c = 0; c < colonies[j].Warriors.Count; c++)
+                        foreach (var n in t.Specials)
                         {
-                            Warrior n = colonies[j].Warriors[c];
-                            heaps[random.Next(0, 5)].Wariors.Add(n);
-                        }
-
-                        for (int c = 0; c < colonies[j].Warior2.Count; c++)
-                        {
-                            Warrior n = colonies[j].Warior2[c];
-                            heaps[random.Next(0, 5)].Wariors.Add(n);
-                        }
-
-
-                        if (colonies[j].Butterfly.Life != 0)
-                        {
-                            Butterfly n = colonies[j].Butterfly;
-                            heaps[random.Next(0, 5)].Butterfly = n;
+                            heaps[random.Next(0, heaps.Length)].Specials.Add(n);
                         }
                     }
 
-                    for (int k = 0; k < heaps.Length; k++)
+
+                    // Fight
+
+                    for (var k = 0; k < heaps.Length; k++)
                     {
-                        for (int w = 0; w < heaps[k].Wariors.Count; w++)
+                        for (var warCount = 0; warCount < heaps[k].Warriors.Count; warCount++)
                         {
-                            int r = random.Next(0, 2);
-                            if (r == 0)
+                            if (heaps[k].Warriors[warCount] is null) continue;
+                            int RemainAttacks = heaps[k].Warriors[warCount].TargetNum;
+                            for (var attack = 0; attack < RemainAttacks; attack++)
                             {
-                                int ch = random.Next(0, heaps[k].Workers.Count);
-                                if (heaps[k].Wariors[w].Colony == 3)
+                                int enemyIndex = random.Next(0, 3);
+                                if (heaps[k].Warriors[warCount] is not null)
                                 {
-                                    heaps[k].Wariors[w].Damage += 1;
-                                    heaps[k].Wariors[w].Fight(heaps[k].Workers[ch], null);
-                                    heaps[k].Wariors[w].Damage -= 1;
-                                }
+                                    int[] randoms = new[]
+                                    {
+                                        random.Next(0, heaps[k].Workers.Count),
+                                        random.Next(0, heaps[k].Warriors.Count),
+                                        random.Next(0, heaps[k].Specials.Count)
+                                    };
+                                    if (heaps[k].Workers[randoms[0]] is not null && enemyIndex == 0)
+                                    {
+                                        heaps[k].Warriors[warCount].Fight(heaps[k].Workers[randoms[0]]);
+                                        if (heaps[k].Workers[randoms[0]].HP <= 0)
+                                        {
+                                            int warroirIndex = colonies[heaps[k].Workers[randoms[0]].Colony - 1]
+                                                .Workers
+                                                .IndexOf(heaps[k].Workers[randoms[0]]);
+                                            if (warroirIndex != -1)
+                                            {
+                                                colonies[heaps[k].Workers[randoms[0]].Colony - 1].Workers
+                                                    .RemoveAt(warroirIndex);
+                                            }
 
-                                if (heaps[k].Wariors[w].Colony != 3)
-                                {
-                                    heaps[k].Wariors[w].Fight(heaps[k].Workers[ch], null);
-                                }
+                                            heaps[k].Workers[randoms[0]] = null;
+                                        }
+                                    }
 
-                                if (heaps[k].Workers[ch].HP == 0)
-                                {
-                                    heaps[k].Workers[ch] = null;
-                                    heaps[k].Workers.RemoveAt(ch);
-                                }
-                            }
+                                    if (heaps[k].Warriors[randoms[1]] is not null && enemyIndex == 1)
+                                    {
+                                        heaps[k].Warriors[warCount]
+                                            .Fight(heaps[k].Warriors[randoms[1]]);
+                                        if (heaps[k].Warriors[randoms[1]].HP <= 0)
+                                        {
+                                            int warroirIndex = colonies[heaps[k].Warriors[randoms[1]].Colony - 1]
+                                                .Warriors
+                                                .IndexOf(heaps[k].Warriors[randoms[1]]);
+                                            if (warroirIndex != -1)
+                                            {
+                                                colonies[heaps[k].Warriors[randoms[1]].Colony - 1].Warriors
+                                                    .RemoveAt(warroirIndex);
+                                            }
 
-                            if (r == 1)
-                            {
-                                int ch = random.Next(0, heaps[k].Wariors.Count);
-                                if (heaps[k].Wariors[w].Colony == 3)
-                                {
-                                    heaps[k].Wariors[w].Damage += 1;
-                                    heaps[k].Wariors[w].Fight(null, heaps[k].Wariors[ch]);
-                                    heaps[k].Wariors[w].Damage -= 1;
-                                }
+                                            heaps[k].Warriors[randoms[1]] = null;
+                                        }
+                                        else if (heaps[k].Warriors[warCount].HP <= 0)
+                                        {
+                                            int warroirIndex = colonies[heaps[k].Warriors[warCount].Colony - 1]
+                                                .Warriors
+                                                .IndexOf(heaps[k].Warriors[warCount]);
+                                            if (warroirIndex != -1)
+                                            {
+                                                colonies[heaps[k].Warriors[warCount].Colony - 1].Warriors
+                                                    .RemoveAt(warroirIndex);
+                                            }
 
-                                if (heaps[k].Wariors[w].Colony != 3)
-                                {
-                                    heaps[k].Wariors[w].Fight(null, heaps[k].Wariors[ch]);
-                                }
+                                            heaps[k].Warriors[warCount] = null;
+                                        }
+                                    }
 
-                                if (heaps[k].Wariors[ch].HP == 0)
-                                {
-                                    heaps[k].Wariors[ch] = null;
-                                    heaps[k].Wariors.RemoveAt(ch);
-                                }
+                                    if (heaps[k].Specials.Count == 0 || enemyIndex != 2) continue;
+                                    {
+                                        if (heaps[k].Specials[randoms[2]] is null) continue;
+                                        heaps[k].Warriors[warCount].Fight(heaps[k].Specials[randoms[2]]);
+                                        if (heaps[k].Specials[randoms[2]].HP <= 0)
+                                        {
+                                            int warroirIndex =
+                                                colonies[heaps[k].Specials[randoms[2]].Colony - 1]
+                                                    .Specials
+                                                    .IndexOf(heaps[k].Specials[randoms[2]]);
+                                            if (warroirIndex != -1)
+                                            {
+                                                colonies[heaps[k].Specials[randoms[2]].Colony - 1].Specials
+                                                    .RemoveAt(warroirIndex);
+                                            }
 
-                                if (heaps[k].Wariors[w].HP == 0) //TODO: IndexOutOfRange
-                                {
-                                    heaps[k].Wariors[w] = null;
-                                    heaps[k].Wariors.RemoveAt(w);
+                                            heaps[k].Specials[randoms[2]] = null;
+                                        }
+                                        else if (heaps[k].Warriors[warCount].HP <= 0)
+                                        {
+                                            int warriorIndex = colonies[heaps[k].Warriors[warCount].Colony - 1]
+                                                .Warriors
+                                                .IndexOf(heaps[k].Warriors[warCount]);
+                                            if (warriorIndex != -1)
+                                            {
+                                                colonies[heaps[k].Warriors[warCount].Colony - 1].Warriors
+                                                    .RemoveAt(warriorIndex);
+                                            }
+
+                                            heaps[k].Warriors[warCount] = null;
+                                        }
+                                    }
                                 }
                             }
                         }
 
-                        for (int w = 0; w < heaps[k].Workers.Count; w++)
+                        for (var specialCount = 0; specialCount < heaps[k].Specials.Count; specialCount++)
                         {
-                            if (i < 8) // хомяк?
+                            if (heaps[k].Specials[specialCount] is null) continue;
+                            int RemainAttacks = heaps[k].Specials[specialCount].TargetNum;
+                            for (var attack = 0; attack < RemainAttacks; attack++)
                             {
-                                heaps[k].Workers[w].Count += 1;
-                            }
-
-                            int safe = heaps[k].Workers[w].Count;
-                            if (heaps[k].Branch > heaps[k].Workers[w].Branch & heaps[k].Workers[w].Count > 0)
-                            {
-                                heaps[k].Branch -= heaps[k].Workers[w].Branch;
-                                heaps[k].Workers[w].Count -= heaps[k].Workers[w].Branch;
-                                for (int l = 0; l < colonies[heaps[k].Workers[w].Num].Workers.Count; l++)
+                                int enemyIndex = random.Next(0, 3);
+                                if (heaps[k].Specials[specialCount] is null) continue;
+                                int[] randoms = new[]
                                 {
-                                    if (colonies[c].Workers[l].Num == heaps[k].Workers[w].Num)
+                                    random.Next(0, heaps[k].Workers.Count),
+                                    random.Next(0, heaps[k].Warriors.Count),
+                                    random.Next(0, heaps[k].Specials.Count)
+                                };
+                                if (heaps[k].Workers.Count != 0 && heaps[k].Workers[randoms[0]] is not null &&
+                                    enemyIndex == 0)
+                                {
+                                    heaps[k].Specials[specialCount]
+                                        .Fight(heaps[k].Workers[randoms[0]]);
+                                    if (heaps[k].Workers[randoms[0]].HP <= 0)
                                     {
-                                        colonies[c].Branch(heaps[k].Workers[w].Branch);
+                                        int warroirIndex = colonies[heaps[k].Workers[randoms[0]].Colony - 1]
+                                            .Workers
+                                            .IndexOf(heaps[k].Workers[randoms[0]]);
+                                        if (warroirIndex != -1)
+                                        {
+                                            colonies[heaps[k].Workers[randoms[0]].Colony - 1].Warriors
+                                                .RemoveAt(warroirIndex);
+                                        }
+
+                                        heaps[k].Workers[randoms[0]] = null;
                                     }
                                 }
-                            }
 
-                            if (heaps[k].Branch < heaps[k].Workers[w].Branch & heaps[k].Workers[w].Count > 0 &
-                                heaps[k].Branch > 0)
-                            {
-                                heaps[k].Branch = 0;
-                                heaps[k].Workers[w].Count -= heaps[k].Branch;
-                                for (int c = 0; c < colonies.Count; c++)
+                                if (heaps[k].Warriors.Count != 0 && heaps[k].Warriors[randoms[1]] != null &&
+                                    enemyIndex == 1)
                                 {
-                                    for (int l = 0; l < colonies[c].Workers.Count; l++)
+                                    heaps[k].Specials[specialCount]
+                                        .Fight(heaps[k].Warriors[randoms[1]]);
+                                    if (heaps[k].Warriors[randoms[1]].HP <= 0)
                                     {
-                                        if (colonies[c].Workers[l].Num == heaps[k].Workers[w].Num)
+                                        int warroirIndex = colonies[heaps[k].Warriors[randoms[1]].Colony - 1]
+                                            .Warriors
+                                            .IndexOf(heaps[k].Warriors[randoms[1]]);
+                                        if (warroirIndex != -1)
                                         {
-                                            colonies[c].Branch(heaps[k].Branch);
+                                            colonies[heaps[k].Warriors[randoms[1]].Colony - 1].Warriors
+                                                .RemoveAt(warroirIndex);
+                                        }
+
+                                        heaps[k].Warriors[randoms[1]] = null;
+                                    }
+                                    else if (heaps[k].Specials[specialCount].HP <= 0)
+                                    {
+                                        int specialIndex = colonies[heaps[k].Specials[specialCount].Colony - 1]
+                                            .Specials
+                                            .IndexOf(heaps[k].Specials[specialCount]);
+                                        if (specialIndex != -1)
+                                        {
+                                            colonies[heaps[k].Specials[specialCount].Colony - 1].Specials
+                                                .RemoveAt(specialIndex);
+                                        }
+
+                                        heaps[k].Specials[specialCount] = null;
+                                    }
+                                }
+
+                                if (heaps[k].Specials.Count == 0 || enemyIndex != 2) continue;
+                                {
+                                    if (heaps[k].Specials[randoms[2]] != null && heaps[k].Specials[randoms[2]] !=
+                                        heaps[k].Specials[specialCount])
+                                    {
+                                        heaps[k].Specials[specialCount].Fight(
+                                            heaps[k].Specials[randoms[2]]);
+                                        if (heaps[k].Specials[randoms[2]].HP <= 0)
+                                        {
+                                            int warroirIndex = colonies[heaps[k].Specials[randoms[2]].Colony - 1]
+                                                .Specials
+                                                .IndexOf(heaps[k].Specials[randoms[2]]);
+                                            if (warroirIndex != -1)
+                                            {
+                                                colonies[heaps[k].Specials[randoms[2]].Colony - 1].Specials
+                                                    .RemoveAt(warroirIndex);
+                                            }
+
+                                            heaps[k].Specials[randoms[2]] = null;
+                                        }
+                                        else if (heaps[k].Specials[specialCount].HP <= 0)
+                                        {
+                                            int specialIndex =
+                                                colonies[heaps[k].Specials[specialCount].Colony - 1]
+                                                    .Specials
+                                                    .IndexOf(heaps[k].Specials[specialCount]);
+                                            if (specialIndex != -1)
+                                            {
+                                                colonies[heaps[k].Specials[specialCount].Colony - 1].Specials
+                                                    .RemoveAt(specialIndex);
+                                            }
+
+                                            heaps[k].Specials[specialCount] = null;
                                         }
                                     }
                                 }
-                            }
-
-                            if (heaps[k].Leaf > heaps[k].Workers[w].Leaf & heaps[k].Workers[w].Count > 0)
-                            {
-                                heaps[k].Leaf -= heaps[k].Workers[w].Leaf;
-                                heaps[k].Workers[w].Count -= heaps[k].Workers[w].Leaf;
-                                for (int c = 0; c < colonies.Count; c++)
-                                {
-                                    for (int l = 0; l < colonies[c].Workers.Count; l++)
-                                    {
-                                        if (colonies[c].Workers[l].Num == heaps[k].Workers[w].Num)
-                                        {
-                                            colonies[c].Leaf(heaps[k].Workers[w].Leaf);
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (heaps[k].Leaf < heaps[k].Workers[w].Leaf & heaps[k].Workers[w].Count > 0 &
-                                heaps[k].Leaf > 0)
-                            {
-                                heaps[k].Leaf = 0;
-                                heaps[k].Workers[w].Count -= heaps[k].Leaf;
-                                for (int c = 0; c < colonies.Count; c++)
-                                {
-                                    for (int l = 0; l < colonies[c].Workers.Count; l++)
-                                    {
-                                        if (colonies[c].Workers[l].Num == heaps[k].Workers[w].Num)
-                                        {
-                                            colonies[c].Leaf(heaps[k].Leaf);
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (heaps[k].Stone > heaps[k].Workers[w].Stone & heaps[k].Workers[w].Count > 0)
-                            {
-                                heaps[k].Stone -= heaps[k].Workers[w].Stone;
-                                heaps[k].Workers[w].Count -= heaps[k].Workers[w].Stone;
-                                for (int c = 0; c < colonies.Count; c++)
-                                {
-                                    for (int l = 0; l < colonies[c].Workers.Count; l++)
-                                    {
-                                        if (colonies[c].Workers[l].Num == heaps[k].Workers[w].Num)
-                                        {
-                                            colonies[c].Stone(heaps[k].Workers[w].Stone);
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (heaps[k].Stone < heaps[k].Workers[w].Stone & heaps[k].Workers[w].Count > 0 &
-                                heaps[k].Stone > 0)
-                            {
-                                heaps[k].Stone = 0;
-                                heaps[k].Workers[w].Count -= heaps[k].Stone;
-                                for (int c = 0; c < colonies.Count; c++)
-                                {
-                                    for (int l = 0; l < colonies[c].Workers.Count; l++)
-                                    {
-                                        if (colonies[c].Workers[l].Num == heaps[k].Workers[w].Num)
-                                        {
-                                            colonies[c].Stone(heaps[k].Stone);
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (heaps[k].Water > heaps[k].Workers[w].Water & heaps[k].Workers[w].Count > 0)
-                            {
-                                heaps[k].Water -= heaps[k].Workers[w].Water;
-                                heaps[k].Workers[w].Count -= heaps[k].Workers[w].Water;
-                                for (int c = 0; c < colonies.Count; c++)
-                                {
-                                    for (int l = 0; l < colonies[c].Workers.Count; l++)
-                                    {
-                                        if (colonies[c].Workers[l].Num == heaps[k].Workers[w].Num)
-                                        {
-                                            colonies[c].Water(heaps[k].Workers[w].Water);
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (heaps[k].Water < heaps[k].Workers[w].Water & heaps[k].Workers[w].Count > 0 &
-                                heaps[k].Water > 0)
-                            {
-                                heaps[k].Water = 0;
-                                heaps[k].Workers[w].Count -= heaps[k].Water;
-                                for (int c = 0; c < colonies.Count; c++)
-                                {
-                                    for (int l = 0; l < colonies[c].Workers.Count; l++)
-                                    {
-                                        if (colonies[c].Workers[l].Num == heaps[k].Workers[w].Num)
-                                        {
-                                            colonies[c].Water(heaps[k].Water);
-                                        }
-                                    }
-                                }
-                            }
-
-                            heaps[k].Workers[w].Count = safe;
-                        }
-
-                        if (heaps[k].Scarab != null)
-                        {
-                            if (heaps[k].Scarab.HP != 0)
-                            {
-                                int save = heaps[k].Scarab.Count;
-                                if (heaps[k].Branch > heaps[k].Scarab.Branch & heaps[k].Scarab.Count > 0)
-                                {
-                                    heaps[k].Branch -= heaps[k].Scarab.Branch;
-                                    heaps[k].Scarab.Count -= heaps[k].Scarab.Branch;
-                                    colonies[0].Branch(heaps[k].Scarab.Branch);
-                                }
-
-                                if (heaps[k].Branch < heaps[k].Scarab.Branch & heaps[k].Scarab.Count > 0 &
-                                    heaps[k].Branch > 0)
-                                {
-                                    heaps[k].Branch = 0;
-                                    heaps[k].Scarab.Count -= heaps[k].Branch;
-                                    colonies[0].Branch(heaps[k].Branch);
-                                }
-
-                                if (heaps[k].Leaf > heaps[k].Scarab.Leaf & heaps[k].Scarab.Count > 0)
-                                {
-                                    heaps[k].Leaf -= heaps[k].Scarab.Leaf;
-                                    heaps[k].Scarab.Count -= heaps[k].Scarab.Leaf;
-                                    colonies[0].Leaf(heaps[k].Scarab.Leaf);
-                                }
-
-                                if (heaps[k].Leaf < heaps[k].Scarab.Leaf & heaps[k].Scarab.Count > 0 &
-                                    heaps[k].Leaf > 0)
-                                {
-                                    heaps[k].Leaf = 0;
-                                    heaps[k].Scarab.Count -= heaps[k].Leaf;
-                                    colonies[0].Leaf(heaps[k].Leaf);
-                                }
-
-                                if (heaps[k].Stone > heaps[k].Scarab.Stone & heaps[k].Scarab.Count > 0)
-                                {
-                                    heaps[k].Stone -= heaps[k].Scarab.Stone;
-                                    heaps[k].Scarab.Count -= heaps[k].Scarab.Stone;
-                                    colonies[0].Stone(heaps[k].Scarab.Stone);
-                                }
-
-                                if (heaps[k].Stone < heaps[k].Scarab.Stone & heaps[k].Scarab.Count > 0 &
-                                    heaps[k].Stone > 0)
-                                {
-                                    heaps[k].Stone = 0;
-                                    heaps[k].Scarab.Count -= heaps[k].Stone;
-                                    colonies[0].Stone(heaps[k].Stone);
-                                }
-
-                                if (heaps[k].Water > heaps[k].Scarab.Water & heaps[k].Scarab.Count > 0)
-                                {
-                                    heaps[k].Water -= heaps[k].Scarab.Water;
-                                    heaps[k].Scarab.Count -= heaps[k].Scarab.Water;
-                                    colonies[0].Water(heaps[k].Scarab.Water);
-                                }
-
-                                if (heaps[k].Water < heaps[k].Scarab.Water & heaps[k].Scarab.Count > 0 &
-                                    heaps[k].Water > 0)
-                                {
-                                    heaps[k].Water = 0;
-                                    heaps[k].Scarab.Count -= heaps[k].Water;
-                                    colonies[0].Water(heaps[k].Water);
-                                }
-
-                                heaps[k].Scarab.Count = save;
                             }
                         }
-
-                        if (heaps[k].Butterfly != null)
-                        {
-                            if (heaps[k].Butterfly.HP != 0)
-                            {
-                                int save = heaps[k].Butterfly.Count;
-                                if (heaps[k].Branch > heaps[k].Butterfly.Branch & heaps[k].Butterfly.Count > 0)
-                                {
-                                    heaps[k].Branch -= heaps[k].Butterfly.Branch;
-                                    heaps[k].Butterfly.Count -= heaps[k].Butterfly.Branch;
-                                    colonies[0].Branch(heaps[k].Butterfly.Branch);
-                                }
-
-                                if (heaps[k].Branch < heaps[k].Butterfly.Branch & heaps[k].Butterfly.Count > 0 &
-                                    heaps[k].Branch > 0)
-                                {
-                                    heaps[k].Branch = 0;
-                                    heaps[k].Butterfly.Count -= heaps[k].Branch;
-                                    colonies[0].Branch(heaps[k].Branch);
-                                }
-
-                                if (heaps[k].Leaf > heaps[k].Butterfly.Leaf & heaps[k].Butterfly.Count > 0)
-                                {
-                                    heaps[k].Leaf -= heaps[k].Butterfly.Leaf;
-                                    heaps[k].Butterfly.Count -= heaps[k].Butterfly.Leaf;
-                                    colonies[0].Leaf(heaps[k].Butterfly.Leaf);
-                                }
-
-                                if (heaps[k].Leaf < heaps[k].Butterfly.Leaf & heaps[k].Butterfly.Count > 0 &
-                                    heaps[k].Leaf > 0)
-                                {
-                                    heaps[k].Leaf = 0;
-                                    heaps[k].Butterfly.Count -= heaps[k].Leaf;
-                                    colonies[0].Leaf(heaps[k].Leaf);
-                                }
-
-                                if (heaps[k].Stone > heaps[k].Butterfly.Stone & heaps[k].Butterfly.Count > 0)
-                                {
-                                    heaps[k].Stone -= heaps[k].Butterfly.Stone;
-                                    heaps[k].Butterfly.Count -= heaps[k].Butterfly.Stone;
-                                    colonies[0].Stone(heaps[k].Butterfly.Stone);
-                                }
-
-                                if (heaps[k].Stone < heaps[k].Butterfly.Stone & heaps[k].Butterfly.Count > 0 &
-                                    heaps[k].Stone > 0)
-                                {
-                                    heaps[k].Stone = 0;
-                                    heaps[k].Butterfly.Count -= heaps[k].Stone;
-                                    colonies[0].Stone(heaps[k].Stone);
-                                }
-
-                                if (heaps[k].Water > heaps[k].Butterfly.Water & heaps[k].Butterfly.Count > 0)
-                                {
-                                    heaps[k].Water -= heaps[k].Butterfly.Water;
-                                    heaps[k].Butterfly.Count -= heaps[k].Butterfly.Water;
-                                    colonies[0].Water(heaps[k].Butterfly.Water);
-                                }
-
-                                if (heaps[k].Water < heaps[k].Butterfly.Water & heaps[k].Butterfly.Count > 0 &
-                                    heaps[k].Water > 0)
-                                {
-                                    heaps[k].Water = 0;
-                                    heaps[k].Butterfly.Count -= heaps[k].Water;
-                                    colonies[0].Water(heaps[k].Water);
-                                }
-
-                                heaps[k].Butterfly.Count = save;
-                            }
-                        }
-
-                        // if (heaps[k].Termite != null)
-                        // {
-                        //     int r = random.Next(0, 4);
-                        //     if (r == 0)
-                        //     {
-                        //         int ch = random.Next(0, heaps[k].Workers.Count);
-                        //         heaps[k].Termite.Fight(heaps[k].Workers[ch], null, null, null);
-                        //         if (heaps[k].Workers[ch].HP == 0)
-                        //         {
-                        //             heaps[k].Workers[ch] = null;
-                        //             heaps[k].Workers.RemoveAt(ch);
-                        //         }
-                        //     }
-                        //
-                        //     if (r == 1)
-                        //     {
-                        //         int ch = random.Next(0, heaps[k].Wariors.Count);
-                        //         heaps[k].Termite.Fight(null, heaps[k].Wariors[ch], null, null);
-                        //         if (heaps[k].Wariors[ch].HP == 0)
-                        //         {
-                        //             heaps[k].Wariors[ch] = null;
-                        //             heaps[k].Wariors.RemoveAt(ch);
-                        //         }
-                        //
-                        //         if (heaps[k].Termite.HP == 0)
-                        //         {
-                        //             heaps[k].Termite = null;
-                        //         }
-                        //     }
-                        //
-                        //     if (r == 2 & heaps[k].Scarab != null)
-                        //     {
-                        //         if (heaps[k].Scarab.HP != 0)
-                        //         {
-                        //             heaps[k].Termite.Fight(null, null, null, heaps[k].Scarab);
-                        //         }
-                        //     }
-                        //
-                        //     if (r == 3 & heaps[k].Butterfly != null)
-                        //     {
-                        //         if (heaps[k].Butterfly.HP != 0)
-                        //         {
-                        //             heaps[k].Termite.Fight(null, null, heaps[k].Butterfly, null);
-                        //         }
-                        //     }
-                        // }
                     }
 
-                    for (int j = 0; j < colonies.Count; j++)
+                    // взять ресурсы
+                    for (var h = 0; h < heaps.Length; h++)
                     {
-                        for (int k = 0; k < colonies[j].Workers.Count; k++)
+                        for (int w = 0; w < heaps[h].Workers.Count; w++)
                         {
-                            if (colonies[j].Workers[k] == null)
+                            if (heaps[h].Workers[w] is not null)
                             {
-                                colonies[j].Workers.RemoveAt(k);
-                            }
-                        }
+                                int safe = heaps[h].Workers[w].Count;
+                                // веточка
+                                if (heaps[h].Branch >= heaps[h].Workers[w].Branch && safe > 0)
+                                {
+                                    heaps[h].Branch -= heaps[h].Workers[w].Branch;
+                                    heaps[h].Workers[w].Count -=
+                                        heaps[h].Workers[w].Branch;
+                                    int resource = heaps[h].Workers[w].Branch;
+                                    colonies[heaps[h].Workers[w].Colony - 1].Branch(resource);
+                                }
 
-                        for (int k = 0; k < colonies[j].Worker2.Count; k++)
-                        {
-                            if (colonies[j].Worker2[k] == null)
-                            {
-                                colonies[j].Worker2.RemoveAt(k);
-                            }
-                        }
+                                // листик
+                                if (heaps[h].Leaf >= heaps[h].Workers[w].Leaf && safe > 0)
+                                {
+                                    heaps[h].Leaf -= heaps[h].Workers[w].Leaf;
+                                    heaps[h].Workers[w].Count -=
+                                        heaps[h].Workers[w].Leaf;
+                                    int resource = heaps[h].Workers[w].Leaf;
+                                    colonies[heaps[h].Workers[w].Colony - 1].Leaf(resource);
+                                }
 
-                        for (int k = 0; k < colonies[j].Warriors.Count; k++)
-                        {
-                            if (colonies[j].Warriors[k] == null)
-                            {
-                                colonies[j].Warriors.RemoveAt(k);
-                            }
-                        }
+                                // камушек
+                                if (heaps[h].Stone >= heaps[h].Workers[w].Stone && safe > 0)
+                                {
+                                    heaps[h].Stone -= heaps[h].Workers[w].Stone;
+                                    heaps[h].Workers[w].Count -=
+                                        heaps[h].Workers[w].Stone;
+                                    int resource = heaps[h].Workers[w].Stone;
+                                    colonies[heaps[h].Workers[w].Colony - 1].Stone(resource);
+                                }
 
-                        for (int k = 0; k < colonies[j].Warior2.Count; k++)
-                        {
-                            if (colonies[j].Warior2[k] == null)
-                            {
-                                colonies[j].Warior2.RemoveAt(k);
+                                // росинка
+                                if (heaps[h].Water >= heaps[h].Workers[w].Water && safe > 0)
+                                {
+                                    heaps[h].Water -= heaps[h].Workers[w].Water;
+                                    heaps[h].Workers[w].Count -=
+                                        heaps[h].Workers[w].Water;
+                                    int resource = heaps[h].Workers[w].Water;
+                                    colonies[heaps[h].Workers[w].Colony - 1].Water(resource);
+                                }
+
+                                heaps[h].Workers[w].Count = safe;
                             }
                         }
+                    }
+
+
+                    foreach (var colony in colonies)
+                    {
+                        colony.Queen.Grow(colony);
                     }
 
                     Reproduction(colonies, colonies.Count);
 
-                    Console.WriteLine();
-                    Console.WriteLine("________________________");
-                    Console.WriteLine();
+                    Console.WriteLine("============== END OF THE DAY {0}===============", i + 1);
                 }
 
                 else if (comand == "info")
@@ -644,37 +504,58 @@ namespace Practica_1year_ants
             }
         }
 
+        static void Winner(List<Colony> colonies)
+        {
+            int resources = 0;
+            int currResources = 0;
+            string colonyName = "";
+            foreach (var colony in colonies)
+            {
+                currResources += colony.branch;
+                currResources += colony.leaf;
+                currResources += colony.stone;
+                currResources += colony.water;
+
+                if (currResources >= resources)
+                {
+                    resources = currResources;
+                    currResources = 0;
+                    colonyName = colony.Name;
+                }
+            }
+
+            Console.WriteLine($"Победила колония {colonyName} с общим колиеством ресурсов {resources}");
+        }
+
         static void Reproduction(List<Colony> colonies, int count)
         {
             Random random = new Random();
             for (int colony = 0; colony < count; colony++)
             {
-                if (!colonies[colony].SubColony)
+                if (colonies[colony].SubColony) continue;
+                if (colonies[colony].Queen.Count == 0 && colonies[colony].Queen.QueenDoughter[0] <=
+                    colonies[colony].Queen.QueenDoughter[1])
                 {
-                    if (colonies[colony].Queen.Count == 0 && colonies[colony].Queen.QueenDoughter[0] <=
-                        colonies[colony].Queen.QueenDoughter[1])
-                    {
-                        colonies[colony].Queen.Start = random.Next(colonies[colony].Queen.QueenDoughter[0],
-                            colonies[colony].Queen.QueenDoughter[1]);
-                        colonies[colony].Queen.Count++;
-                    }
-                    else if (colonies[colony].Queen.Count < colonies[colony].Queen.Start)
-                    {
-                        colonies[colony].Queen.Count++;
-                    }
-                    else if (colonies[colony].Queen.Count >= colonies[colony].Queen.Start + random.Next(0, 8))
-                    {
-                        colonies.Add(new Colony(CreateColonyName(random),
-                            new Queen(CreateQueenName(random), new int[] {2, random.Next(2, 5)},
-                                new int[] {1, random.Next(2, 5)}, colonies[colony].Queen.Colony,
-                                // count, 
-                                1, 3, 1, 1),
-                            new int[] {random.Next(3, 10), random.Next(2, 5), random.Next(1, 2)}, true));
-                        count += 1;
-                        AddAnts(colonies[^1], colonies[colony], random, count);
-                        colonies[colony].Queen.Count = 0;
-                        colonies[colony].Queen.QueenDoughter[0]++;
-                    }
+                    colonies[colony].Queen.Start = random.Next(colonies[colony].Queen.QueenDoughter[0],
+                        colonies[colony].Queen.QueenDoughter[1]);
+                    colonies[colony].Queen.Count++;
+                }
+                else if (colonies[colony].Queen.Count < colonies[colony].Queen.Start)
+                {
+                    colonies[colony].Queen.Count++;
+                }
+                else if (colonies[colony].Queen.Count >= colonies[colony].Queen.Start + random.Next(0, 8))
+                {
+                    colonies.Add(new Colony(CreateColonyName(random),
+                        new Queen(CreateQueenName(random), new int[] {2, random.Next(2, 5)},
+                            new int[] {1, random.Next(2, 5)}, colonies[colony].Queen.Colony,
+                            // count, 
+                            1, 3, 1, 1),
+                        new int[] {random.Next(3, 18), random.Next(2, 10), random.Next(0, 2)}, true));
+                    count += 1;
+                    AddAnts(colonies[^1], colonies[colony], random, count);
+                    colonies[colony].Queen.Count = 0;
+                    colonies[colony].Queen.QueenDoughter[0]++;
                 }
             }
         }
@@ -797,7 +678,7 @@ namespace Practica_1year_ants
                         else if (type == 1)
                         {
                             colony.Warriors.Add(
-                                (Warrior) colony.Workers[random.Next(0, colony.Workers.Count - 1)].Clone());
+                                (Warrior) colony.Warriors[random.Next(0, colony.Warriors.Count - 1)].Clone());
                         }
                         else if (type == 2)
                         {
@@ -821,7 +702,7 @@ namespace Practica_1year_ants
 
             public Worker(String tags, int colony, int leaf, int branch, int stone, int water, int count,
                 int hp = 1, int armor = 0, int damage = 0, List<string>? bonus = null) : base(colony, tags,
-                damage: damage, armor: armor, hp: hp, bonus)
+                damage: damage, armor: armor, hp: hp, bonus: bonus)
             {
                 Leaf = leaf;
                 Branch = branch;
@@ -847,81 +728,73 @@ namespace Practica_1year_ants
                 TargetNum = target;
             }
 
-            public void Fight(Worker? worker, Warrior? warrior, Special? special, bool groupIgnoreEffects = false)
+            public void Fight(Worker worker, bool groupIgnoreEffects = false)
             {
-                if (this.aphid)
+                if (this.aphid || worker.Colony == Colony && Bad != 1) return;
+                if (Bonus is not null && Bonus.Contains("игнорирует защиту"))
                 {
-                    return;
+                    worker.HP -= Damage;
                 }
-
-                if (worker is not null)
+                else
                 {
-                    if (worker.Colony != Colony || Bad == 1)
+                    if (worker.Armor >= Damage)
                     {
-                        if (Bonus is not null && Bonus.Contains("игнорирует защиту"))
+                        worker.Armor -= Damage;
+                    }
+                    else
+                    {
+                        worker.HP -= Damage - worker.Armor;
+                        worker.Armor = 0;
+                    }
+                }
+            }
+
+            public void Fight(Warrior? warrior, bool groupIgnoreEffects = false)
+            {
+                if (this.aphid || warrior is null) return;
+                if (warrior.Colony != Colony || Bad == 1)
+                {
+                    if (Bonus is not null && Bonus.Contains("игнорирует защиту"))
+                    {
+                        warrior.HP -= Damage;
+                    }
+                    else
+                    {
+                        if (warrior.Armor >= Damage)
                         {
-                            worker.HP -= Damage;
+                            warrior.Armor -= Damage;
                         }
                         else
                         {
-                            if (worker.Armor >= Damage)
-                            {
-                                worker.Armor -= Damage;
-                            }
-                            else
-                            {
-                                worker.HP -= Damage - worker.Armor;
-                                worker.Armor = 0;
-                            }
+                            warrior.HP -= Damage - warrior.Armor;
+                            warrior.Armor = 0;
                         }
                     }
                 }
 
-                if (warrior is not null)
+                if ((warrior.HP <= 0 && (warrior.Bonus is null || !warrior.Bonus.Contains("всегда наносит укус"))) ||
+                    (warrior.Colony == Colony && warrior.Bad != 1)) return;
+                if (warrior.Bonus is not null && warrior.Bonus.Contains("игнорирует защиту"))
                 {
-                    if (warrior.Colony != Colony || Bad == 1)
+                    HP -= warrior.Damage;
+                }
+                else
+                {
+                    if (Armor >= warrior.Damage)
                     {
-                        if (Bonus is not null && Bonus.Contains("игнорирует защиту"))
-                        {
-                            warrior.HP -= Damage;
-                        }
-                        else
-                        {
-                            if (warrior.Armor >= Damage)
-                            {
-                                warrior.Armor -= Damage;
-                            }
-                            else
-                            {
-                                warrior.HP -= Damage - warrior.Armor;
-                                warrior.Armor = 0;
-                            }
-                        }
+                        Armor -= warrior.Damage;
                     }
-
-                    if ((warrior.HP > 0 || (warrior.Bonus is not null && warrior.Bonus.Contains("всегда наносит укус"))) &&
-                        (warrior.Colony != Colony || warrior.Bad == 1))
+                    else
                     {
-                        if (warrior.Bonus is not null && warrior.Bonus.Contains("игнорирует защиту"))
-                        {
-                            HP -= warrior.Damage;
-                        }
-                        else
-                        {
-                            if (Armor >= warrior.Damage)
-                            {
-                                Armor -= warrior.Damage;
-                            }
-                            else
-                            {
-                                HP -= warrior.Damage - Armor;
-                                Armor = 0;
-                            }
-                        }
+                        HP -= warrior.Damage - Armor;
+                        Armor = 0;
                     }
                 }
+            }
 
-                if (special is null) return;
+            public void Fight(Special? special, bool groupIgnoreEffects = false)
+            {
+                if (this.aphid || special is null) return;
                 if (special.Colony != Colony || Bad == 1)
                 {
                     if (!special.Bonus!.Contains("не может быть атакован войнами") ||
@@ -986,7 +859,7 @@ namespace Practica_1year_ants
             public Special(int leaf, int branch, int stone, int water, int count, int bad, string tags, int colony,
                 int target = 1, int attackNum = 1, int hp = 1, int armor = 1, int damage = 1,
                 List<String>? bonus = null) : base(bad, tags, colony,
-                target, attackNum, hp, armor, damage)
+                target, attackNum, hp, armor, damage, bonus: bonus)
             {
                 Leaf = leaf;
                 Branch = branch;
@@ -1118,9 +991,9 @@ namespace Practica_1year_ants
 
         struct Heap
         {
-            public List<Warrior> Wariors;
-            public List<Worker> Workers;
-            public List<Special> Specials;
+            public List<Warrior?> Warriors;
+            public List<Worker?> Workers;
+            public List<Special?> Specials;
             public int Leaf;
             public int Branch;
             public int Stone;
@@ -1132,9 +1005,9 @@ namespace Practica_1year_ants
                 Branch = branch;
                 Stone = stone;
                 Water = water;
-                Workers = new List<Worker>();
-                Wariors = new List<Warrior>();
-                Specials = new List<Special>();
+                Workers = new List<Worker?>();
+                Warriors = new List<Warrior?>();
+                Specials = new List<Special?>();
             }
         }
     }
