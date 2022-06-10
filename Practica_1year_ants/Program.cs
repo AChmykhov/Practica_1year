@@ -8,10 +8,45 @@ namespace Practica_1year_ants
         {
             Console.WriteLine($"Commands:\nnext - starts next day\nstop - stops program\ninfo - info about objects");
             string? comand;
-            string col; //TODO: cleanup
-            string inf; //TODO: cleanup
             int i = 0;
             int dry = 11;
+            // list of ants templates  for reproduction
+            Worker[] repWorkers =
+            {
+                new("обычный", 0, 1, 0, 0, 0, 1, armor: 8),
+                new("обычный", 0, 0, 0, 0, 1, 1),
+                new("элитный", 0, 1, 0, 0, 1, 2, 8, 4),
+                new("элитный", 0, 0, 0, 1, 1, 2, 8, 4),
+                new("элитный капризный", 0, 0, 0, 1, 1, 2, 8, 4,
+                    bonus: new List<string> {"игнорирует каждый 2й поход"}),
+                new("обычный забывчивый", 0, 0, 1, 0, 0, 1,
+                    bonus: new List<string> {"может забыть взять ресурс из кучи"})
+            };
+            Warrior[] repWarriors =
+            {
+                new(0, "обычный настойчивый", 0, 1, 1, 1, 0, 1,
+                    new List<string> {"всегда наносит укус"}),
+                new(0, "обычный точный", 0, 1, 1, 1, 0, 1,
+                    new List<string> {"игнорирует защиту", "может наносить урон неуязвимым насекомым"}),
+                new(0, "старший", 0, 1, 1, 2, 1, 2),
+                new(0, "элитный", 0, 2, 2, 8, 4, 3),
+                new(0, "элитный", 0, 2, 2, 8, 4, 3),
+                new(0, "легендарный", 0, 3, 1, 10, 6, 6)
+            };
+            Special[] repSpecials =
+            {
+                new(1, 1, 1, 1, 1, 0,
+                    "трудолюбивый неуязвимый агрессивный берсерк забывчивый - Сверчок", 0, 3, 3, 20, 5, 7,
+                    new List<string>
+                    {
+                        "не может быть атакован войнами", "одноразовый, массового поражения",
+                        "может забыть взять ресурс из кучи"
+                    }),
+                new(0, 0, 0, 0, 0, 0,
+                    "ленивый обычный мирный осторожный - Бабочка", 0, 0, 0, 17, 7, 0,
+                    new List<string> {"группа игнорирует эффекты агрессивных насекомых на территории"})
+            };
+
             //create colonies
             List<Colony> colonies = new List<Colony>
             {
@@ -133,32 +168,115 @@ namespace Practica_1year_ants
 
             Random random = new Random();
             int aphidStartDay = random.Next(0, 7);
+            int aphidColony = 0;
+            int aphidType = 0;
 
             Console.WriteLine("=====");
 
             while (i < dry)
             {
-                int summary = 0;
-                foreach (var heap in heaps)
-                {
-                    summary += heap.Branch;
-                    summary += heap.Leaf;
-                    summary += heap.Stone;
-                    summary += heap.Water;
-                }
+                // comand = Console.ReadLine();
+                comand = "next";
 
-                if (summary == 0)
-                {
-                    Winner(colonies);
-                }
-
-                comand = Console.ReadLine();
                 if (comand == "next")
                 {
-                    Console.WriteLine($"Day {i}  (Until dry season {dry - i} days)");
-                    if (aphidStartDay < i && i < aphidStartDay + 5)
+                    int summary = 0;
+                    foreach (var heap in heaps)
                     {
+                        summary += heap.Branch;
+                        summary += heap.Leaf;
+                        summary += heap.Stone;
+                        summary += heap.Water;
+                    }
+
+                    if (summary == 0)
+                    {
+                        Winner(colonies);
+                    }
+
+                    Console.WriteLine($"Day {i + 1}  (Until dry season {dry - i} days)");
+                    if (aphidStartDay <= i && i < aphidStartDay + 5)
+                    {
+                        if (aphidStartDay != i && aphidType != -1)
+                        {
+                            switch (aphidType)
+                            {
+                                case 0:
+                                    foreach (var w in colonies[aphidColony].Workers)
+                                    {
+                                        w.aphid = false;
+                                    }
+
+                                    break;
+                                case 1:
+                                    foreach (var w in colonies[aphidColony].Warriors)
+                                    {
+                                        w.aphid = false;
+                                    }
+
+                                    break;
+                                case 2:
+                                    foreach (var s in colonies[aphidColony].Specials)
+                                    {
+                                        s.aphid = false;
+                                    }
+
+                                    break;
+                            }
+                        }
+
                         Console.WriteLine($"Действует эффект \"Тля\" , осталось {aphidStartDay + 5 - i} дней ");
+                        aphidColony = random.Next(0, colonies.Count);
+                        if (colonies[aphidColony].Workers.Count != 0)
+                        {
+                            if (colonies[aphidColony].Warriors.Count != 0)
+                            {
+                                if (colonies[aphidColony].Specials.Count != 0)
+                                {
+                                    aphidType = random.Next(0, 3);
+                                }
+                                else
+                                {
+                                    aphidType = random.Next(0, 2);
+                                }
+                            }
+                            else
+                            {
+                                if (colonies[aphidColony].Specials.Count != 0)
+                                {
+                                    aphidType = random.Next(0, 2);
+                                    if (aphidType == 1) aphidType = 2; //костыль для случайного выбора двух опций, но корректного вычисления индекса
+                                }
+                                else
+                                {
+                                    aphidType = 0;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            aphidType = -1;
+                            Console.WriteLine("Тля не нашла кого подменить в колонии.");
+                        }
+
+                        if (aphidType != -1)
+                        {
+                            switch (aphidType)
+                            {
+                                case 0:
+                                    colonies[aphidColony].Workers[random.Next(0, colonies[aphidColony].Workers.Count)]
+                                        .aphid = true;
+                                    break;
+                                case 1:
+                                    colonies[aphidColony].Warriors[random.Next(0, colonies[aphidColony].Warriors.Count)]
+                                        .aphid = true;
+                                    break;
+                                case 2:
+                                    colonies[aphidColony].Specials[random.Next(0, colonies[aphidColony].Specials.Count)]
+                                        .aphid = true;
+                                    break;
+                            }
+                        }
                     }
 
                     // Console.WriteLine($"День {i}  (До засухи {dryCount - day} дней)");
@@ -174,7 +292,7 @@ namespace Practica_1year_ants
                         Console.WriteLine();
                     }
 
-                    for (int j = 0; j < 5; j++)
+                    for (int j = 0; j < heaps.Length; j++)
                     {
                         Console.WriteLine(
                             $"Куча {j + 1}: в = {heaps[j].Branch}, к = {heaps[j].Stone}, л = {heaps[j].Leaf}, р = {heaps[j].Water}");
@@ -187,6 +305,7 @@ namespace Practica_1year_ants
                         heaps[j].Warriors = new List<Warrior?>();
                         heaps[j].Workers = new List<Worker?>();
                     }
+
                     foreach (var t in colonies)
                     {
                         foreach (var n in t.Workers)
@@ -225,7 +344,7 @@ namespace Practica_1year_ants
                                         random.Next(0, heaps[k].Warriors.Count),
                                         random.Next(0, heaps[k].Specials.Count)
                                     };
-                                    if (heaps[k].Workers[randoms[0]] is not null && enemyIndex == 0)
+                                    if (heaps[k].Workers.Count != 0 && heaps[k].Workers[randoms[0]] is not null && enemyIndex == 0)
                                     {
                                         heaps[k].Warriors[warCount].Fight(heaps[k].Workers[randoms[0]]);
                                         if (heaps[k].Workers[randoms[0]].HP <= 0)
@@ -332,13 +451,14 @@ namespace Practica_1year_ants
                                         .Fight(heaps[k].Workers[randoms[0]]);
                                     if (heaps[k].Workers[randoms[0]].HP <= 0)
                                     {
-                                        int warroirIndex = colonies[heaps[k].Workers[randoms[0]].Colony - 1]
+                                        int workerIndex = colonies[heaps[k].Workers[randoms[0]].Colony - 1]
                                             .Workers
                                             .IndexOf(heaps[k].Workers[randoms[0]]);
-                                        if (warroirIndex != -1)
+                                        if (workerIndex != -1)
                                         {
-                                            colonies[heaps[k].Workers[randoms[0]].Colony - 1].Warriors  // TODO: Index out of range
-                                                .RemoveAt(warroirIndex);
+                                            colonies[heaps[k].Workers[randoms[0]].Colony - 1]
+                                                .Workers
+                                                .RemoveAt(workerIndex);
                                         }
 
                                         heaps[k].Workers[randoms[0]] = null;
@@ -421,63 +541,107 @@ namespace Practica_1year_ants
                     // взять ресурсы
                     for (var h = 0; h < heaps.Length; h++)
                     {
-                        for (int w = 0; w < heaps[h].Workers.Count; w++)
+                        foreach (var w in heaps[h].Workers)
                         {
-                            if (heaps[h].Workers[w] is not null)
+                            if (w is null || w.Count == 0 || w.aphid) continue;
+                            int safe = w.Count;
+                            // веточка
+                            if (heaps[h].Branch >= w.Branch && safe > 0)
                             {
-                                int safe = heaps[h].Workers[w].Count;
-                                // веточка
-                                if (heaps[h].Branch >= heaps[h].Workers[w].Branch && safe > 0)
-                                {
-                                    heaps[h].Branch -= heaps[h].Workers[w].Branch;
-                                    heaps[h].Workers[w].Count -=
-                                        heaps[h].Workers[w].Branch;
-                                    int resource = heaps[h].Workers[w].Branch;
-                                    colonies[heaps[h].Workers[w].Colony - 1].Branch(resource);
-                                }
-
-                                // листик
-                                if (heaps[h].Leaf >= heaps[h].Workers[w].Leaf && safe > 0)
-                                {
-                                    heaps[h].Leaf -= heaps[h].Workers[w].Leaf;
-                                    heaps[h].Workers[w].Count -=
-                                        heaps[h].Workers[w].Leaf;
-                                    int resource = heaps[h].Workers[w].Leaf;
-                                    colonies[heaps[h].Workers[w].Colony - 1].Leaf(resource);
-                                }
-
-                                // камушек
-                                if (heaps[h].Stone >= heaps[h].Workers[w].Stone && safe > 0)
-                                {
-                                    heaps[h].Stone -= heaps[h].Workers[w].Stone;
-                                    heaps[h].Workers[w].Count -=
-                                        heaps[h].Workers[w].Stone;
-                                    int resource = heaps[h].Workers[w].Stone;
-                                    colonies[heaps[h].Workers[w].Colony - 1].Stone(resource);
-                                }
-
-                                // росинка
-                                if (heaps[h].Water >= heaps[h].Workers[w].Water && safe > 0)
-                                {
-                                    heaps[h].Water -= heaps[h].Workers[w].Water;
-                                    heaps[h].Workers[w].Count -=
-                                        heaps[h].Workers[w].Water;
-                                    int resource = heaps[h].Workers[w].Water;
-                                    colonies[heaps[h].Workers[w].Colony - 1].Water(resource);
-                                }
-
-                                heaps[h].Workers[w].Count = safe;
+                                heaps[h].Branch -= w.Branch;
+                                w.Count -=
+                                    w.Branch;
+                                int resource = w.Branch;
+                                colonies[w.Colony - 1].Branch(resource);
                             }
+
+                            // листик
+                            if (heaps[h].Leaf >= w.Leaf && safe > 0)
+                            {
+                                heaps[h].Leaf -= w.Leaf;
+                                w.Count -=
+                                    w.Leaf;
+                                int resource = w.Leaf;
+                                colonies[w.Colony - 1].Leaf(resource);
+                            }
+
+                            // камушек
+                            if (heaps[h].Stone >= w.Stone && safe > 0)
+                            {
+                                heaps[h].Stone -= w.Stone;
+                                w.Count -=
+                                    w.Stone;
+                                int resource = w.Stone;
+                                colonies[w.Colony - 1].Stone(resource);
+                            }
+
+                            // росинка
+                            if (heaps[h].Water >= w.Water && safe > 0)
+                            {
+                                heaps[h].Water -= w.Water;
+                                w.Count -=
+                                    w.Water;
+                                int resource = w.Water;
+                                colonies[w.Colony - 1].Water(resource);
+                            }
+
+                            w.Count = safe;
+                        }
+                        foreach (var s in heaps[h].Specials)
+                        {
+                            if (s is null || s.Count == 0 || s.aphid) continue;
+                            int safe = s.Count;
+                            // веточка
+                            if (heaps[h].Branch >= s.Branch && safe > 0)
+                            {
+                                heaps[h].Branch -= s.Branch;
+                                s.Count -=
+                                    s.Branch;
+                                int resource = s.Branch;
+                                colonies[s.Colony - 1].Branch(resource);
+                            }
+
+                            // листик
+                            if (heaps[h].Leaf >= s.Leaf && safe > 0)
+                            {
+                                heaps[h].Leaf -= s.Leaf;
+                                s.Count -=
+                                    s.Leaf;
+                                int resource = s.Leaf;
+                                colonies[s.Colony - 1].Leaf(resource);
+                            }
+
+                            // камушек
+                            if (heaps[h].Stone >= s.Stone && safe > 0)
+                            {
+                                heaps[h].Stone -= s.Stone;
+                                s.Count -=
+                                    s.Stone;
+                                int resource = s.Stone;
+                                colonies[s.Colony - 1].Stone(resource);
+                            }
+
+                            // росинка
+                            if (heaps[h].Water >= s.Water && safe > 0)
+                            {
+                                heaps[h].Water -= s.Water;
+                                s.Count -=
+                                    s.Water;
+                                int resource = s.Water;
+                                colonies[s.Colony - 1].Water(resource);
+                            }
+
+                            s.Count = safe;
                         }
                     }
 
 
                     foreach (var colony in colonies)
                     {
-                        colony.Queen.Grow(colony);
+                        colony.Queen.Grow(colony, repWorkers, repWarriors, repSpecials);
                     }
 
-                    Reproduction(colonies, colonies.Count);
+                    Reproduction(colonies, colonies.Count, repWorkers, repWarriors, repSpecials);
 
                     Console.WriteLine("============== END OF THE DAY {0}===============", i + 1);
                 }
@@ -502,6 +666,8 @@ namespace Practica_1year_ants
 
                 i++;
             }
+
+            Winner(colonies);
         }
 
         static void Winner(List<Colony> colonies)
@@ -527,7 +693,8 @@ namespace Practica_1year_ants
             Console.WriteLine($"Победила колония {colonyName} с общим колиеством ресурсов {resources}");
         }
 
-        static void Reproduction(List<Colony> colonies, int count)
+        static void Reproduction(List<Colony> colonies, int count, Worker[] workers, Warrior[] warriors,
+            Special[] specials)
         {
             Random random = new Random();
             for (int colony = 0; colony < count; colony++)
@@ -553,32 +720,33 @@ namespace Practica_1year_ants
                             1, 3, 1, 1),
                         new int[] {random.Next(3, 18), random.Next(2, 10), random.Next(0, 2)}, true));
                     count += 1;
-                    AddAnts(colonies[^1], colonies[colony], random, count);
+                    AddAnts(colonies[^1], random, count, workers, warriors, specials);
                     colonies[colony].Queen.Count = 0;
                     colonies[colony].Queen.QueenDoughter[0]++;
                 }
             }
         }
 
-        static void AddAnts(Colony colony, Colony parentalColony, Random random, int colonyNum)
+        static void AddAnts(Colony colony, Random random, int colonyNum, Worker[] workers, Warrior[] warriors,
+            Special[] specials)
         {
             for (int worker = 0; worker < colony.Population![0]; worker++)
             {
                 colony.Workers.Add(
-                    (Worker) parentalColony.Workers[random.Next(0, parentalColony.Workers.Count)].Clone());
+                    (Worker) workers[random.Next(0, workers.Length)].Clone());
                 colony.Workers[worker].Colony = colonyNum;
             }
 
             for (int warrior = 0; warrior < colony.Population[1]; warrior++)
             {
-                colony.Warriors.Add((Warrior) parentalColony.Warriors[random.Next(0, parentalColony.Warriors.Count)]
+                colony.Warriors.Add((Warrior) warriors[random.Next(0, warriors.Length)]
                     .Clone());
                 colony.Warriors[warrior].Colony = colonyNum;
             }
 
             for (int special = 0; special < colony.Population[2]; special++)
             {
-                colony.Specials.Add((Special) parentalColony.Specials[random.Next(0, parentalColony.Specials.Count)]
+                colony.Specials.Add((Special) specials[random.Next(0, specials.Length)]
                     .Clone());
                 colony.Specials[special].Colony = colonyNum;
             }
@@ -658,7 +826,7 @@ namespace Practica_1year_ants
                 Count = new Random().Next(Cycle[0], Cycle[1]);
             }
 
-            public void Grow(Colony colony)
+            public void Grow(Colony colony, Worker[] workers, Warrior[] warriors, Special[] specials)
             {
                 if (Count < Cycle[0])
                 {
@@ -673,17 +841,20 @@ namespace Practica_1year_ants
                         if (type == 0)
                         {
                             colony.Workers.Add(
-                                (Worker) colony.Workers[random.Next(0, colony.Workers.Count - 1)].Clone());
+                                (Worker) workers[random.Next(0, workers.Length)].Clone());
+                            colony.Workers[^1].Colony = this.Colony;
                         }
                         else if (type == 1)
                         {
                             colony.Warriors.Add(
-                                (Warrior) colony.Warriors[random.Next(0, colony.Warriors.Count - 1)].Clone());
+                                (Warrior) warriors[random.Next(0, warriors.Length)].Clone());
+                            colony.Warriors[^1].Colony = this.Colony;
                         }
                         else if (type == 2)
                         {
-                            colony.Specials.Add((Special) colony.Specials[random.Next(0, colony.Specials.Count - 1)]
+                            colony.Specials.Add((Special) specials[random.Next(0, specials.Length)]
                                 .Clone());
+                            colony.Specials[^1].Colony = this.Colony;
                         }
 
                         Count = 0;
@@ -773,7 +944,7 @@ namespace Practica_1year_ants
                 }
 
                 if ((warrior.HP <= 0 && (warrior.Bonus is null || !warrior.Bonus.Contains("всегда наносит укус"))) ||
-                    (warrior.Colony == Colony && warrior.Bad != 1)) return;
+                    (warrior.Colony == Colony && warrior.Bad != 1) || warrior.aphid) return;
                 if (warrior.Bonus is not null && warrior.Bonus.Contains("игнорирует защиту"))
                 {
                     HP -= warrior.Damage;
@@ -834,7 +1005,7 @@ namespace Practica_1year_ants
                     }
                 }
 
-                if (special.Colony == Colony) return;
+                if (special.Colony == Colony || special.aphid) return;
                 if (Armor >= special.Damage)
                 {
                     Armor -= special.Damage;
