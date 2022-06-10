@@ -337,7 +337,7 @@ namespace Practica_1year_ants
                                             .IndexOf(heaps[k].Workers[randoms[0]]);
                                         if (warroirIndex != -1)
                                         {
-                                            colonies[heaps[k].Workers[randoms[0]].Colony - 1].Warriors
+                                            colonies[heaps[k].Workers[randoms[0]].Colony - 1].Warriors  // TODO: Index out of range
                                                 .RemoveAt(warroirIndex);
                                         }
 
